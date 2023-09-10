@@ -1,34 +1,45 @@
 const WebSocket = require('ws');
-const http = require('http');
 
-// Crie um servidor HTTP simples
-const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Servidor WebSocket em execução\n');
-});
+const server = new WebSocket.Server({ port: 8080 });
+const clients = new Map();
 
-// Crie um servidor WebSocket que ouve na mesma porta do servidor HTTP
-const wss = new WebSocket.Server({ server });
+server.on('connection', (socket) => {
+  console.log('Client connected');
 
-// Defina um manipulador de eventos para quando um cliente se conectar ao servidor WebSocket
-wss.on('connection', (ws) => {
-  console.log('Cliente conectado.');
+  socket.on('message', (message) => {
+    console.log(`Received message: ${message}`);
 
-  // Defina manipuladores de eventos para mensagens recebidas do cliente
-  ws.on('message', (message) => {
-    console.log(`Mensagem recebida: ${message}`);
-    
-    // Enviar uma resposta de volta ao cliente
-    ws.send(`Você disse: ${message}`);
+
+
+    const parsedMessage = JSON.parse(message);
+    //SE RECEBER 0 DO OBJETO ENVIA A MENSAGEM PARA TODOS
+    if (parsedMessage.ep == 0) {
+      clients.forEach(function (conectados, i) {
+        conectados.send(parsedMessage.message);
+      })
+      //SE RECEBER 1 DO OBJETO ENVIA A MENSAGEM PARA UM USUÁRIO EM ESÉCIFICO
+    } else {
+      const recipient = clients.get(parsedMessage.recipient);
+      //console.log(recipient);
+      if (recipient && recipient.readyState === WebSocket.OPEN) {
+        console.log("mensagem enviada")
+        recipient.send(parsedMessage.message);
+      }
+    }
+  });
+  //REMOVE O USUPARIO DA LISTA
+  socket.on('close', () => {
+    console.log('Client disconnected');
+    clients.forEach((clientSocket, clientId) => {
+      if (clientSocket === socket) {
+        clients.delete(clientId);
+      }
+    });
   });
 
-  // Defina um manipulador de eventos para quando o cliente se desconectar
-  ws.on('close', () => {
-    console.log('Cliente desconectado.');
-  });
-});
 
-// Inicie o servidor HTTP na porta 8080
-server.listen(8080, () => {
-  console.log('Servidor HTTP e WebSocket estão ouvindo na porta 8080.');
+  const clientId = Math.random().toString(36).substr(2, 9);
+  clients.set(clientId, socket);
+  socket.send(JSON.stringify({ type: 'clientId', clientId }));
+
 });
