@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 
-const server = new WebSocket.Server({ port: 8080 });
+const server = new WebSocket.Server({ port: 443 });
 const clients = new Map();
 
 server.on('connection', (socket) => {
@@ -15,7 +15,7 @@ server.on('connection', (socket) => {
     //SE RECEBER 0 DO OBJETO ENVIA A MENSAGEM PARA TODOS
     if (parsedMessage.ep == 0) {
       clients.forEach(function (conectados, i) {
-        conectados.send(parsedMessage.message);
+        conectados.send(JSON.stringify({ type: 'msg', 'msg':parsedMessage.message }));
       })
       //SE RECEBER 1 DO OBJETO ENVIA A MENSAGEM PARA UM USUÁRIO EM ESÉCIFICO
     } else {
@@ -23,7 +23,7 @@ server.on('connection', (socket) => {
       //console.log(recipient);
       if (recipient && recipient.readyState === WebSocket.OPEN) {
         console.log("mensagem enviada")
-        recipient.send(parsedMessage.message);
+        recipient.send(JSON.stringify({ type: 'msg', 'msg':parsedMessage.message }));
       }
     }
   });
@@ -40,6 +40,6 @@ server.on('connection', (socket) => {
 
   const clientId = Math.random().toString(36).substr(2, 9);
   clients.set(clientId, socket);
-  socket.send(JSON.stringify({ type: 'clientId', clientId }));
+  socket.send(JSON.stringify({ type: 'init', 'clientId':clientId }));
 
 });
