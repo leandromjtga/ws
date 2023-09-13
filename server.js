@@ -1,4 +1,4 @@
-const WebSocket = require('wss');
+const WebSocket = require('ws');
 
 const server = new WebSocket.Server({ port: 8080 });
 const clients = new Map();
