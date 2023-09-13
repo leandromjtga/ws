@@ -1,6 +1,6 @@
-const WebSocket = require('ws');
+const WebSocket = require('wss');
 
-const server = new WebSocket.Server({ port: 443 });
+const server = new WebSocket.Server({ port: 8080 });
 const clients = new Map();
 
 server.on('connection', (socket) => {
