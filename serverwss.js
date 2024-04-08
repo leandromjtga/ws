@@ -4,8 +4,8 @@ const WebSocket = require('ws');
 
 // Certificado SSL/TLS
 const serverOptions = {
-  key: fs.readFileSync('caminho/para/your-private-key.pem'),
-  cert: fs.readFileSync('caminho/para/your-certificate.pem')
+  key: fs.readFileSync('/etc/letsencrypt/live/personal365.com.br/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/personal365.com.br/fullchain.pem')
 };
 
 const server = https.createServer(serverOptions);
